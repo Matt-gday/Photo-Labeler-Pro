@@ -215,6 +215,7 @@ function downloadPhoto(photo, labelModal = null, removeAfterDownload = false) {
     
     // Show iOS modal if on iOS device and wait for user confirmation
     if (typeof isIOS === 'function' && isIOS()) {
+        // Store the download info but don't start download yet
         showIosSaveModal(photo, removeAfterDownload);
         return;
     }
@@ -367,22 +368,30 @@ function exportAllPhotos() {
         return;
     }
     
-    // Show iOS modal once for batch export if on iOS
+    // For iOS, show modal and let user initiate batch download
     if (typeof isIOS === 'function' && isIOS()) {
-        showIosSaveModal();
+        // Store batch export info for iOS
+        window.pendingBatchExport = photosToExport;
+        showIosSaveModal(); // Show modal without specific photo for batch
+        return;
     }
     
-    const photosToExport = [...photos]; // Create a copy to avoid issues during iteration
+    // Regular batch export for non-iOS devices
+    performBatchExport(photos);
+}
+
+function performBatchExport(photosToExport) {
+    const photosArray = [...photosToExport]; // Create a copy to avoid issues during iteration
     let exportCount = 0;
     
-    photosToExport.forEach((photo, index) => {
+    photosArray.forEach((photo, index) => {
         // Stagger downloads to avoid overwhelming the browser
         setTimeout(() => {
-            performDownload(photo, false); // Never remove after download, use performDownload directly for batch
+            performDownload(photo, false); // Never remove after download
             exportCount++;
             
             // Show completion message when all photos are exported
-            if (exportCount === photosToExport.length) {
+            if (exportCount === photosArray.length) {
                 setTimeout(() => {
                     alert(`Successfully exported ${exportCount} photo${exportCount !== 1 ? 's' : ''}! Images remain in the project for further editing.`);
                 }, 500);

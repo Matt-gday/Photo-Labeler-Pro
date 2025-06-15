@@ -213,5 +213,11 @@ function hideIosSaveModal() {
             pendingIosDownload = null; // Clear the pending download
             performDownload(photo, removeAfterDownload);
         }
+        // Handle batch export for iOS
+        else if (window.pendingBatchExport) {
+            const photosToExport = window.pendingBatchExport;
+            window.pendingBatchExport = null; // Clear the pending batch export
+            performBatchExport(photosToExport);
+        }
     }
 } 

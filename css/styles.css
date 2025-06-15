@@ -399,7 +399,8 @@ body {
     display: grid;
     gap: 20px;
     height: fit-content;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    justify-content: start;
     max-width: 100%;
     width: 100%;
     margin: 0;
@@ -415,7 +416,7 @@ body {
     display: flex;
     flex-direction: column;
     width: 100%;
-    max-width: 100%;
+    max-width: 400px;
     min-width: 280px;
     box-sizing: border-box;
 }
