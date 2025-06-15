@@ -5,12 +5,8 @@ let photoIdCounter = 0;
 function handleFiles(files) {
     console.log(`Processing ${files.length} files:`, files.map(f => f.name));
     
-    const fileNames = files.map(f => f.name);
-    selectedFiles.textContent = `Processing ${files.length} files: ${fileNames.join(', ')}`;
-    selectedFiles.style.display = 'block';
-    
-    let processedCount = 0;
-    let successCount = 0;
+    // Hide the selected files text since we're not showing status anymore
+    selectedFiles.style.display = 'none';
     
     files.forEach((file, index) => {
         console.log(`Starting to process file ${index + 1}/${files.length}: ${file.name}`);
@@ -20,8 +16,6 @@ function handleFiles(files) {
         
         reader.onerror = (error) => {
             console.error(`Error reading file ${file.name}:`, error);
-            processedCount++;
-            updateFileStatus();
         };
         
         reader.onload = (e) => {
@@ -41,8 +35,6 @@ function handleFiles(files) {
             
             img.onerror = (error) => {
                 console.error(`Error loading image ${file.name}:`, error);
-                processedCount++;
-                updateFileStatus();
             };
             
             img.onload = () => {
@@ -57,12 +49,9 @@ function handleFiles(files) {
                 };
                 
                 photos.push(photo);
-                successCount++;
-                processedCount++;
                 
                 updateDisplay();
                 createPhotoItem(photo);
-                updateFileStatus();
             };
             
             img.src = imageData;
@@ -70,13 +59,6 @@ function handleFiles(files) {
         
         reader.readAsDataURL(file);
     });
-    
-    function updateFileStatus() {
-        if (processedCount === files.length) {
-            selectedFiles.textContent = `Loaded ${successCount} of ${files.length} images successfully`;
-            console.log(`Finished processing all files. Success: ${successCount}/${files.length}`);
-        }
-    }
 }
 
 function updatePhotoCanvas(photo, canvas) {
@@ -85,10 +67,36 @@ function updatePhotoCanvas(photo, canvas) {
     // Get device pixel ratio for high-DPI displays
     const dpr = window.devicePixelRatio || 1;
     
-    // Get the fixed dimensions from CSS
-    const canvasStyle = window.getComputedStyle(canvas);
-    const displayWidth = parseInt(canvasStyle.width);
-    const displayHeight = parseInt(canvasStyle.height);
+    // Get the container dimensions
+    const containerRect = canvas.getBoundingClientRect();
+    const maxWidth = containerRect.width;
+    
+    // Calculate proper dimensions based on image aspect ratio with constraints
+    const imageAspectRatio = photo.image.width / photo.image.height;
+    let displayWidth = maxWidth;
+    let displayHeight = displayWidth / imageAspectRatio;
+    
+    // Apply reasonable height constraints
+    const maxHeight = window.innerWidth <= 480 ? window.innerHeight * 0.6 : 400;
+    const minHeight = 200;
+    
+    if (displayHeight > maxHeight) {
+        displayHeight = maxHeight;
+        displayWidth = displayHeight * imageAspectRatio;
+    } else if (displayHeight < minHeight) {
+        displayHeight = minHeight;
+        displayWidth = displayHeight * imageAspectRatio;
+    }
+    
+    // Ensure width doesn't exceed container
+    if (displayWidth > maxWidth) {
+        displayWidth = maxWidth;
+        displayHeight = displayWidth / imageAspectRatio;
+    }
+    
+    // Set canvas display size via CSS
+    canvas.style.width = displayWidth + 'px';
+    canvas.style.height = displayHeight + 'px';
     
     // Set actual canvas size in memory (scaled up for high-DPI)
     canvas.width = displayWidth * dpr;
@@ -100,47 +108,31 @@ function updatePhotoCanvas(photo, canvas) {
     // Clear the canvas first
     ctx.clearRect(0, 0, displayWidth, displayHeight);
     
-    // Calculate how to fit the image within the fixed canvas size
-    const imageAspectRatio = photo.image.width / photo.image.height;
-    const canvasAspectRatio = displayWidth / displayHeight;
-    
-    let drawWidth, drawHeight, drawX, drawY;
-    
-    if (imageAspectRatio > canvasAspectRatio) {
-        // Image is wider than canvas - fit to width
-        drawWidth = displayWidth;
-        drawHeight = displayWidth / imageAspectRatio;
-        drawX = 0;
-        drawY = (displayHeight - drawHeight) / 2;
-    } else {
-        // Image is taller than canvas - fit to height
-        drawHeight = displayHeight;
-        drawWidth = displayHeight * imageAspectRatio;
-        drawX = (displayWidth - drawWidth) / 2;
-        drawY = 0;
-    }
-    
-    // Draw the image centered within the canvas
-    ctx.drawImage(photo.image, drawX, drawY, drawWidth, drawHeight);
+    // Fill the entire canvas area with the image
+    ctx.drawImage(photo.image, 0, 0, displayWidth, displayHeight);
     
     // Draw title text if there's a title
     if (photo.title.trim()) {
         const title = photo.title.trim();
-        let fontSize = Math.max(14, Math.min(drawWidth, drawHeight) / 45); // Smaller font size for preview
-        ctx.font = `600 ${fontSize}px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif`; // Semi-bold font weight
+        
+        // Calculate font size as a percentage of the smaller dimension for consistency
+        const baseFontSize = Math.min(displayWidth, displayHeight) * 0.04; // 4% of smaller dimension
+        let fontSize = Math.max(12, baseFontSize); // Minimum 12px for preview
+        
+        ctx.font = `600 ${fontSize}px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif`;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'bottom';
         
         // Handle long text - adjust font size to fit within the image area
-        const maxTextWidth = drawWidth - 40;
-        while (ctx.measureText(title).width > maxTextWidth && fontSize > 12) {
+        const maxTextWidth = displayWidth * 0.9; // 90% of display width
+        while (ctx.measureText(title).width > maxTextWidth && fontSize > 10) {
             fontSize -= 1;
             ctx.font = `600 ${fontSize}px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif`;
         }
         
-        // Position text lower on the image (closer to bottom)
-        const textX = drawX + (drawWidth / 2);
-        const textY = drawY + drawHeight - 8;
+        // Position text as a percentage from bottom (consistent with download)
+        const textX = displayWidth / 2;
+        const textY = displayHeight - (displayHeight * 0.03); // 3% from bottom
         
         // Black glow effect
         ctx.shadowColor = '#000000';
@@ -172,21 +164,25 @@ function downloadPhoto(photo, removeAfterDownload = true) {
     // Draw title text if there's a title
     if (photo.title.trim()) {
         const title = photo.title.trim();
-        let fontSize = Math.max(20, Math.min(canvas.width, canvas.height) / 25); // Larger font size for save
-        ctx.font = `600 ${fontSize}px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif`; // Semi-bold font weight
+        
+        // Calculate font size as a percentage of the smaller dimension for consistency
+        const baseFontSize = Math.min(canvas.width, canvas.height) * 0.04; // 4% of smaller dimension
+        let fontSize = Math.max(16, baseFontSize); // Minimum 16px
+        
+        ctx.font = `600 ${fontSize}px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif`;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'bottom';
         
         // Handle long text - adjust font size to fit within the image area
-        const maxTextWidth = canvas.width - 40;
+        const maxTextWidth = canvas.width * 0.9; // 90% of image width
         while (ctx.measureText(title).width > maxTextWidth && fontSize > 12) {
             fontSize -= 1;
             ctx.font = `600 ${fontSize}px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif`;
         }
         
-        // Position text higher up from bottom
+        // Position text as a percentage from bottom (consistent across all resolutions)
         const textX = canvas.width / 2;
-        const textY = canvas.height - 35; // Moved up more from -20 to -35
+        const textY = canvas.height - (canvas.height * 0.03); // 3% from bottom
         
         // Black glow effect
         ctx.shadowColor = '#000000';

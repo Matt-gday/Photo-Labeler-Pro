@@ -4,13 +4,32 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Photo Labeler Pro</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1>Photo Labeler Pro</h1>
-            <p>Professional image labeling and batch processing</p>
+            <h1>PHOTO LABELER <span class="pro-text">PRO</span></h1>
+            <a href="#" class="instructions-link" id="instructionsLink">Instructions</a>
+            <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
+                <svg class="sun-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="5"/>
+                    <line x1="12" y1="1" x2="12" y2="3"/>
+                    <line x1="12" y1="21" x2="12" y2="23"/>
+                    <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+                    <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+                    <line x1="1" y1="12" x2="3" y2="12"/>
+                    <line x1="21" y1="12" x2="23" y2="12"/>
+                    <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+                    <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+                </svg>
+                <svg class="moon-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+                </svg>
+            </button>
         </div>
         
         <div class="main-content">
@@ -25,16 +44,13 @@
                             </svg>
                         </div>
                         <div class="upload-text">Import Images</div>
-                        <div class="upload-subtext">Select multiple files or drag and drop</div>
+                        <div class="upload-subtext">Select multiple files or<br>drag and drop</div>
                     </div>
                     <input type="file" id="fileInput" accept="image/*" multiple>
                     <div class="selected-files" id="selectedFiles"></div>
                 </div>
 
-                <div class="download-all-section">
-                    <button id="downloadAllBtn">Export All</button>
-                    <button id="clearAllBtn">Clear Project</button>
-                </div>
+
             </div>
 
             <div class="preview-section">
@@ -50,6 +66,38 @@
                     <div style="font-size: 0.9rem; margin-top: 10px; opacity: 0.7;">Supports JPEG, PNG, and other common formats</div>
                 </div>
                 <div class="photos-grid" id="photosGrid"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tips Modal -->
+    <div class="modal-overlay" id="tipsModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>How to Use Photo Labeler Pro</h2>
+                <button class="modal-close" id="modalClose" aria-label="Close tips">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="tip-section">
+                    <h3>1. Import Images</h3>
+                    <p>Click "Import Images" or drag and drop multiple photos into the upload area. Supports JPEG, PNG, and other common formats.</p>
+                </div>
+                <div class="tip-section">
+                    <h3>2. Add Text Labels</h3>
+                    <p>Type your desired text in the "Type text..." field below each image. The text will appear on your photo with a professional glow effect.</p>
+                </div>
+                <div class="tip-section">
+                    <h3>3. Save Individual Images</h3>
+                    <p>Click "Save" to download the labeled image. The image will automatically be removed from the app after saving.</p>
+                </div>
+                <div class="tip-section">
+                    <h3>4. Remove Unwanted Images</h3>
+                    <p>Click "Remove" to delete images you don't want to process without saving them.</p>
+                </div>
+                <div class="tip-section">
+                    <h3>5. Switch Themes</h3>
+                    <p>Use the theme toggle (sun/moon icon) in the top right to switch between light and dark modes.</p>
+                </div>
             </div>
         </div>
     </div>

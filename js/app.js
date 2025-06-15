@@ -1,6 +1,6 @@
 // Main application logic
 // Global DOM elements
-let fileInput, uploadArea, selectedFiles, previewPlaceholder, photosGrid, downloadAllBtn, clearAllBtn;
+let fileInput, uploadArea, selectedFiles, previewPlaceholder, photosGrid, themeToggle, instructionsLink, tipsModal, modalClose;
 
 document.addEventListener('DOMContentLoaded', () => {
     // Get DOM elements and make them globally accessible
@@ -9,8 +9,28 @@ document.addEventListener('DOMContentLoaded', () => {
     selectedFiles = document.getElementById('selectedFiles');
     previewPlaceholder = document.getElementById('previewPlaceholder');
     photosGrid = document.getElementById('photosGrid');
-    downloadAllBtn = document.getElementById('downloadAllBtn');
-    clearAllBtn = document.getElementById('clearAllBtn');
+    themeToggle = document.getElementById('themeToggle');
+    instructionsLink = document.getElementById('instructionsLink');
+    tipsModal = document.getElementById('tipsModal');
+    modalClose = document.getElementById('modalClose');
+    
+    // Initialize theme
+    initializeTheme();
+    
+    // Theme toggle functionality
+    themeToggle.addEventListener('click', toggleTheme);
+    
+    // Instructions modal functionality
+    instructionsLink.addEventListener('click', (e) => {
+        e.preventDefault();
+        showTipsModal();
+    });
+    modalClose.addEventListener('click', hideTipsModal);
+    tipsModal.addEventListener('click', (e) => {
+        if (e.target === tipsModal) {
+            hideTipsModal();
+        }
+    });
     
     // Drag and drop functionality
     uploadArea.addEventListener('dragover', (e) => {
@@ -38,34 +58,58 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
     
-    // Download all photos
-    downloadAllBtn.addEventListener('click', () => {
-        photos.forEach((photo, index) => {
-            setTimeout(() => downloadPhoto(photo, false), index * 500); // Stagger downloads, don't remove after download
-        });
-    });
-    
-    // Clear all photos
-    clearAllBtn.addEventListener('click', () => {
-        if (confirm('Are you sure you want to remove all photos?')) {
-            photos.length = 0; // Clear array properly
-            photosGrid.innerHTML = '';
-            selectedFiles.style.display = 'none';
-            fileInput.value = ''; // Reset file input
-            updateDisplay();
-        }
-    });
-    
-    // Handle window resize
+    // Handle window resize with debouncing
+    let resizeTimeout;
     window.addEventListener('resize', () => {
-        photos.forEach(photo => {
-            const photoItem = document.querySelector(`[data-photo-id="${photo.id}"]`);
-            if (photoItem) {
-                const canvas = photoItem.querySelector('.photo-canvas');
-                updatePhotoCanvas(photo, canvas);
-            }
-        });
-        
-
+        clearTimeout(resizeTimeout);
+        resizeTimeout = setTimeout(() => {
+            photos.forEach(photo => {
+                const photoItem = document.querySelector(`[data-photo-id="${photo.id}"]`);
+                if (photoItem) {
+                    const canvas = photoItem.querySelector('.photo-canvas');
+                    // Reset canvas size to allow recalculation
+                    canvas.style.width = '';
+                    canvas.style.height = '';
+                    // Use requestAnimationFrame to ensure DOM has updated
+                    requestAnimationFrame(() => {
+                        updatePhotoCanvas(photo, canvas);
+                    });
+                }
+            });
+        }, 100); // Debounce resize events
     });
 }); 
+
+// Theme management functions
+function initializeTheme() {
+    // Check for saved theme preference or default to dark
+    const savedTheme = localStorage.getItem('theme') || 'dark';
+    if (savedTheme === 'light') {
+        document.documentElement.classList.add('light-theme');
+    }
+}
+
+function toggleTheme() {
+    const isLight = document.documentElement.classList.contains('light-theme');
+    
+    if (isLight) {
+        // Switch to dark theme
+        document.documentElement.classList.remove('light-theme');
+        localStorage.setItem('theme', 'dark');
+    } else {
+        // Switch to light theme
+        document.documentElement.classList.add('light-theme');
+        localStorage.setItem('theme', 'light');
+    }
+}
+
+// Tips modal functions
+function showTipsModal() {
+    tipsModal.style.display = 'flex';
+    document.body.style.overflow = 'hidden'; // Prevent background scrolling
+}
+
+function hideTipsModal() {
+    tipsModal.style.display = 'none';
+    document.body.style.overflow = 'auto'; // Restore scrolling
+} 

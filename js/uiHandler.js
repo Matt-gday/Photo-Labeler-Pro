@@ -3,15 +3,11 @@ function updateDisplay() {
     if (photos.length === 0) {
         previewPlaceholder.style.display = 'block';
         photosGrid.style.display = 'none';
-        downloadAllBtn.style.display = 'none';
-        clearAllBtn.style.display = 'none';
         return;
     }
     
     previewPlaceholder.style.display = 'none';
     photosGrid.style.display = 'grid';
-    downloadAllBtn.style.display = 'inline-block';
-    clearAllBtn.style.display = 'inline-block';
 }
 
 function createPhotoItem(photo) {
@@ -24,13 +20,17 @@ function createPhotoItem(photo) {
     const canvas = document.createElement('canvas');
     canvas.className = 'photo-canvas';
     
+    // Set aspect ratio for mobile responsive design
+    const aspectRatio = photo.image.width / photo.image.height;
+    canvas.style.setProperty('--image-aspect-ratio', aspectRatio);
+    
     const controls = document.createElement('div');
     controls.className = 'photo-controls';
     
     const titleInput = document.createElement('input');
     titleInput.className = 'photo-title-input';
     titleInput.type = 'text';
-    titleInput.placeholder = `Title for ${photo.name}...`;
+    titleInput.placeholder = 'Type text...';
     titleInput.maxLength = 100;
     titleInput.value = photo.title;
     titleInput.oninput = (e) => {
@@ -43,7 +43,7 @@ function createPhotoItem(photo) {
     
     const downloadBtn = document.createElement('button');
     downloadBtn.className = 'photo-download-btn';
-    downloadBtn.textContent = 'Download';
+    downloadBtn.textContent = 'Save';
     downloadBtn.onclick = () => downloadPhoto(photo);
     
     const removeBtn = document.createElement('button');
