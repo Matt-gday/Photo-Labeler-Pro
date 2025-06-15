@@ -1,13 +1,17 @@
 // UI handling functions
 function updateDisplay() {
+    const batchActions = document.getElementById('batchActions');
+    
     if (photos.length === 0) {
         previewPlaceholder.style.display = 'block';
         photosGrid.style.display = 'none';
+        if (batchActions) batchActions.style.display = 'none';
         return;
     }
     
     previewPlaceholder.style.display = 'none';
     photosGrid.style.display = 'grid';
+    if (batchActions) batchActions.style.display = 'flex';
 }
 
 function createPhotoItem(photo) {
@@ -27,6 +31,11 @@ function createPhotoItem(photo) {
     const controls = document.createElement('div');
     controls.className = 'photo-controls';
     
+    // Create label required modal
+    const labelModal = document.createElement('div');
+    labelModal.className = 'label-required-modal';
+    labelModal.textContent = 'A label must be added to save this image';
+    
     const titleInput = document.createElement('input');
     titleInput.className = 'photo-title-input';
     titleInput.type = 'text';
@@ -36,6 +45,8 @@ function createPhotoItem(photo) {
     titleInput.oninput = (e) => {
         photo.title = e.target.value;
         updatePhotoCanvas(photo, canvas);
+        // Hide modal when user starts typing
+        labelModal.classList.remove('show');
     };
     
     const buttonContainer = document.createElement('div');
@@ -44,7 +55,23 @@ function createPhotoItem(photo) {
     const downloadBtn = document.createElement('button');
     downloadBtn.className = 'photo-download-btn';
     downloadBtn.textContent = 'Save';
-    downloadBtn.onclick = () => downloadPhoto(photo);
+    downloadBtn.onclick = () => downloadPhoto(photo, labelModal, false);
+    
+    const textColorToggle = document.createElement('button');
+    textColorToggle.className = 'text-color-toggle';
+    textColorToggle.innerHTML = `
+        <div class="toggle-option ${photo.textColor === 'light' ? 'active' : ''}">light</div>
+        <div class="toggle-option ${photo.textColor === 'dark' ? 'active' : ''}">dark</div>
+    `;
+    textColorToggle.title = 'Toggle text color';
+    textColorToggle.onclick = () => {
+        photo.textColor = photo.textColor === 'light' ? 'dark' : 'light';
+        textColorToggle.innerHTML = `
+            <div class="toggle-option ${photo.textColor === 'light' ? 'active' : ''}">light</div>
+            <div class="toggle-option ${photo.textColor === 'dark' ? 'active' : ''}">dark</div>
+        `;
+        updatePhotoCanvas(photo, canvas);
+    };
     
     const removeBtn = document.createElement('button');
     removeBtn.className = 'photo-remove-btn';
@@ -52,8 +79,10 @@ function createPhotoItem(photo) {
     removeBtn.onclick = () => removePhoto(photo.id);
     
     buttonContainer.appendChild(downloadBtn);
+    buttonContainer.appendChild(textColorToggle);
     buttonContainer.appendChild(removeBtn);
     
+    controls.appendChild(labelModal);
     controls.appendChild(titleInput);
     controls.appendChild(buttonContainer);
     

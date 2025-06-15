@@ -52,7 +52,7 @@ body {
 }
 
 .container {
-    max-width: 1600px;
+    width: 100%;
     margin: 0 auto;
     background: var(--bg-secondary);
     border-radius: 12px;
@@ -78,7 +78,7 @@ body {
 
 .header h1 {
     font-size: 1.4rem;
-    font-weight: 900;
+    font-weight: 950;
     margin-bottom: 2px;
     letter-spacing: -0.025em;
     transition: all 0.3s ease;
@@ -339,6 +339,51 @@ body {
     text-align: center;
 }
 
+.batch-actions {
+    margin-top: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.batch-export-btn {
+    background: linear-gradient(135deg, var(--accent-success) 0%, var(--accent-primary) 100%);
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.batch-export-btn:hover {
+    background: linear-gradient(135deg, var(--accent-success-hover) 0%, var(--accent-primary-hover) 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+.batch-clear-btn {
+    background: var(--accent-danger);
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.batch-clear-btn:hover {
+    background: var(--accent-danger-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
 
 
 .preview-section {
@@ -354,7 +399,7 @@ body {
     display: grid;
     gap: 20px;
     height: fit-content;
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
     max-width: 100%;
     width: 100%;
     margin: 0;
@@ -371,7 +416,7 @@ body {
     flex-direction: column;
     width: 100%;
     max-width: 100%;
-    min-width: 0;
+    min-width: 280px;
     box-sizing: border-box;
 }
 
@@ -394,6 +439,51 @@ body {
     display: flex;
     flex-direction: column;
     gap: 12px;
+    position: relative;
+}
+
+.label-required-modal {
+    position: absolute;
+    top: -45px;
+    left: 0;
+    right: 0;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-secondary);
+    border-radius: 6px;
+    padding: 8px 12px;
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    z-index: 10;
+    display: none;
+    animation: fadeInUp 0.2s ease;
+}
+
+.label-required-modal::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 20px;
+    width: 0;
+    height: 0;
+    border-left: 6px solid transparent;
+    border-right: 6px solid transparent;
+    border-top: 6px solid var(--border-secondary);
+}
+
+.label-required-modal.show {
+    display: block;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .photo-buttons {
@@ -413,6 +503,66 @@ body {
     transition: border-color 0.2s ease, background-color 0.3s ease, color 0.3s ease;
 }
 
+.text-color-toggle {
+    background: transparent;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-width: 45px;
+    height: 40px;
+    gap: 1px;
+    flex: 0 0 auto;
+}
+
+.toggle-option {
+    font-size: 0.65rem;
+    font-weight: 600;
+    transition: all 0.2s ease;
+    padding: 3px 6px;
+    border-radius: 3px;
+    line-height: 1;
+    text-align: center;
+    cursor: pointer;
+    border: 1px solid var(--border-secondary);
+    background: var(--bg-tertiary);
+    min-width: 35px;
+    box-sizing: border-box;
+}
+
+/* Light text option - shows white text on medium grey background */
+.toggle-option:first-child {
+    color: white;
+    background: #666666;
+    border-color: #777777;
+}
+
+.toggle-option:first-child.active {
+    background: #ff8c00;
+    border-color: #ff8c00;
+    color: white;
+}
+
+/* Dark text option - shows black text on medium grey background */
+.toggle-option:last-child {
+    color: black;
+    background: #666666;
+    border-color: #777777;
+}
+
+.toggle-option:last-child.active {
+    background: #ff8c00;
+    border-color: #ff8c00;
+    color: black;
+}
+
+.text-color-toggle:hover .toggle-option:not(.active) {
+    opacity: 0.8;
+}
+
 .photo-title-input::placeholder {
     color: var(--text-tertiary);
 }
@@ -427,13 +577,14 @@ body {
     background: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-success) 100%);
     color: white;
     border: none;
-    padding: 8px 16px;
-    border-radius: 6px;
+    padding: 12px 16px;
+    border-radius: 8px;
     font-size: 0.875rem;
-    font-weight: 500;
+    font-weight: 600;
     cursor: pointer;
     transition: all 0.2s ease;
     flex: 1;
+    min-width: 0;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
@@ -443,17 +594,20 @@ body {
     box-shadow: 0 4px 8px rgba(0,0,0,0.15);
 }
 
+
+
 .photo-remove-btn {
     background: var(--accent-danger);
     color: white;
     border: none;
-    padding: 8px 16px;
-    border-radius: 6px;
+    padding: 12px 16px;
+    border-radius: 8px;
     font-size: 0.875rem;
-    font-weight: 500;
+    font-weight: 600;
     cursor: pointer;
     transition: all 0.2s ease;
     flex: 1;
+    min-width: 0;
 }
 
 .photo-remove-btn:hover {
@@ -480,17 +634,7 @@ body {
 }
 
 /* Responsive Design */
-@media (min-width: 800px) {
-    .photos-grid {
-        grid-template-columns: repeat(2, 1fr);
-    }
-}
-
-@media (min-width: 1200px) {
-    .photos-grid {
-        grid-template-columns: repeat(3, 1fr);
-    }
-}
+/* Grid columns now handled automatically by auto-fit minmax */
 
 @media (min-width: 768px) {
     body {

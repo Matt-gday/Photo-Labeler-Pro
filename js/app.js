@@ -14,6 +14,15 @@ document.addEventListener('DOMContentLoaded', () => {
     tipsModal = document.getElementById('tipsModal');
     modalClose = document.getElementById('modalClose');
     
+    // Get batch action buttons
+    const exportAllBtn = document.getElementById('exportAllBtn');
+    const clearProjectBtn = document.getElementById('clearProjectBtn');
+    
+    // Get label validation modal elements
+    const labelValidationModal = document.getElementById('labelValidationModal');
+    const labelModalClose = document.getElementById('labelModalClose');
+    const labelValidationMessage = document.getElementById('labelValidationMessage');
+    
     // Initialize theme
     initializeTheme();
     
@@ -31,6 +40,26 @@ document.addEventListener('DOMContentLoaded', () => {
             hideTipsModal();
         }
     });
+    
+    // Label validation modal functionality
+    if (labelModalClose) {
+        labelModalClose.addEventListener('click', hideLabelValidationModal);
+    }
+    if (labelValidationModal) {
+        labelValidationModal.addEventListener('click', (e) => {
+            if (e.target === labelValidationModal) {
+                hideLabelValidationModal();
+            }
+        });
+    }
+    
+    // Batch action functionality
+    if (exportAllBtn) {
+        exportAllBtn.addEventListener('click', exportAllPhotos);
+    }
+    if (clearProjectBtn) {
+        clearProjectBtn.addEventListener('click', clearProject);
+    }
     
     // Drag and drop functionality
     uploadArea.addEventListener('dragover', (e) => {
@@ -112,4 +141,26 @@ function showTipsModal() {
 function hideTipsModal() {
     tipsModal.style.display = 'none';
     document.body.style.overflow = 'auto'; // Restore scrolling
+}
+
+// Label validation modal functions
+function showLabelValidationModal(message) {
+    const labelValidationModal = document.getElementById('labelValidationModal');
+    const labelValidationMessage = document.getElementById('labelValidationMessage');
+    
+    if (labelValidationMessage) {
+        labelValidationMessage.textContent = message;
+    }
+    if (labelValidationModal) {
+        labelValidationModal.style.display = 'flex';
+        document.body.style.overflow = 'hidden'; // Prevent background scrolling
+    }
+}
+
+function hideLabelValidationModal() {
+    const labelValidationModal = document.getElementById('labelValidationModal');
+    if (labelValidationModal) {
+        labelValidationModal.style.display = 'none';
+        document.body.style.overflow = 'auto'; // Restore scrolling
+    }
 } 

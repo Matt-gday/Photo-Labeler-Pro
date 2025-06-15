@@ -2,6 +2,42 @@
 let photos = [];
 let photoIdCounter = 0;
 
+function sortAndDisplayPhotos() {
+    // Sort photos by aspect ratio: landscape (>1.1), square (0.9-1.1), portrait (<0.9)
+    photos.sort((a, b) => {
+        const aspectRatioA = a.image.width / a.image.height;
+        const aspectRatioB = b.image.width / b.image.height;
+        
+        // Categorize aspect ratios
+        const getCategoryOrder = (aspectRatio) => {
+            if (aspectRatio > 1.1) return 1; // Landscape first
+            if (aspectRatio >= 0.9) return 2; // Square second
+            return 3; // Portrait third
+        };
+        
+        const categoryA = getCategoryOrder(aspectRatioA);
+        const categoryB = getCategoryOrder(aspectRatioB);
+        
+        // If same category, sort by aspect ratio within category
+        if (categoryA === categoryB) {
+            return categoryB === 3 ? aspectRatioB - aspectRatioA : aspectRatioA - aspectRatioB;
+        }
+        
+        return categoryA - categoryB;
+    });
+    
+    // Clear existing photo items
+    photosGrid.innerHTML = '';
+    
+    // Update display state
+    updateDisplay();
+    
+    // Create photo items in sorted order
+    photos.forEach(photo => {
+        createPhotoItem(photo);
+    });
+}
+
 function handleFiles(files) {
     console.log(`Processing ${files.length} files:`, files.map(f => f.name));
     
@@ -45,13 +81,14 @@ function handleFiles(files) {
                     image: img,
                     imageData: imageData,
                     exifData: exifData,
-                    title: ''
+                    title: '',
+                    textColor: 'light' // 'light' for white text, 'dark' for black text
                 };
                 
                 photos.push(photo);
                 
-                updateDisplay();
-                createPhotoItem(photo);
+                // Sort photos and refresh display
+                sortAndDisplayPhotos();
             };
             
             img.src = imageData;
@@ -134,14 +171,27 @@ function updatePhotoCanvas(photo, canvas) {
         const textX = displayWidth / 2;
         const textY = displayHeight - (displayHeight * 0.03); // 3% from bottom
         
-        // Black glow effect
-        ctx.shadowColor = '#000000';
-        ctx.shadowBlur = Math.max(5, fontSize / 5); // Darker glow with higher blur
-        ctx.shadowOffsetX = 0;
-        ctx.shadowOffsetY = 0;
+        // Apply text color and glow based on setting
+        if (photo.textColor === 'dark') {
+            // White glow effect for dark text
+            ctx.shadowColor = '#ffffff';
+            ctx.shadowBlur = Math.max(5, fontSize / 5);
+            ctx.shadowOffsetX = 0;
+            ctx.shadowOffsetY = 0;
+            
+            // Draw black text with white glow
+            ctx.fillStyle = '#000000';
+        } else {
+            // Black glow effect for light text (default)
+            ctx.shadowColor = '#000000';
+            ctx.shadowBlur = Math.max(5, fontSize / 5);
+            ctx.shadowOffsetX = 0;
+            ctx.shadowOffsetY = 0;
+            
+            // Draw white text with black glow
+            ctx.fillStyle = '#ffffff';
+        }
         
-        // Draw white text with glow
-        ctx.fillStyle = '#ffffff';
         ctx.fillText(title, textX, textY);
         
         // Reset shadow for other drawing operations
@@ -150,7 +200,19 @@ function updatePhotoCanvas(photo, canvas) {
     }
 }
 
-function downloadPhoto(photo, removeAfterDownload = true) {
+function downloadPhoto(photo, labelModal = null, removeAfterDownload = false) {
+    // Check if photo has a label
+    if (!photo.title || photo.title.trim() === '') {
+        if (labelModal) {
+            labelModal.classList.add('show');
+            // Hide modal after 3 seconds
+            setTimeout(() => {
+                labelModal.classList.remove('show');
+            }, 3000);
+        }
+        return;
+    }
+    
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
     
@@ -184,14 +246,27 @@ function downloadPhoto(photo, removeAfterDownload = true) {
         const textX = canvas.width / 2;
         const textY = canvas.height - (canvas.height * 0.03); // 3% from bottom
         
-        // Black glow effect
-        ctx.shadowColor = '#000000';
-        ctx.shadowBlur = Math.max(5, fontSize / 5); // Darker glow with higher blur
-        ctx.shadowOffsetX = 0;
-        ctx.shadowOffsetY = 0;
+        // Apply text color and glow based on setting
+        if (photo.textColor === 'dark') {
+            // White glow effect for dark text
+            ctx.shadowColor = '#ffffff';
+            ctx.shadowBlur = Math.max(5, fontSize / 5);
+            ctx.shadowOffsetX = 0;
+            ctx.shadowOffsetY = 0;
+            
+            // Draw black text with white glow
+            ctx.fillStyle = '#000000';
+        } else {
+            // Black glow effect for light text (default)
+            ctx.shadowColor = '#000000';
+            ctx.shadowBlur = Math.max(5, fontSize / 5);
+            ctx.shadowOffsetX = 0;
+            ctx.shadowOffsetY = 0;
+            
+            // Draw white text with black glow
+            ctx.fillStyle = '#ffffff';
+        }
         
-        // Draw white text with glow
-        ctx.fillStyle = '#ffffff';
         ctx.fillText(title, textX, textY);
         
         // Reset shadow for other drawing operations
@@ -234,7 +309,7 @@ function downloadPhoto(photo, removeAfterDownload = true) {
                 document.body.removeChild(a);
                 URL.revokeObjectURL(url);
                 
-                // Remove the photo from the app after successful download if requested
+                // Only remove the photo if explicitly requested (for batch operations)
                 if (removeAfterDownload) {
                     removePhoto(photo.id);
                 }
@@ -262,6 +337,51 @@ function removePhoto(photoId) {
             updatePhotoCanvas(photo, canvas);
         }
     });
-    
+}
 
+function exportAllPhotos() {
+    if (photos.length === 0) {
+        alert('No photos to export.');
+        return;
+    }
+    
+    // Check if all photos have labels
+    const photosWithoutLabels = photos.filter(photo => !photo.title || photo.title.trim() === '');
+    if (photosWithoutLabels.length > 0) {
+        const message = photosWithoutLabels.length === 1 
+            ? 'One image is missing a label.'
+            : `${photosWithoutLabels.length} images are missing labels.`;
+        showLabelValidationModal(message);
+        return;
+    }
+    
+    const photosToExport = [...photos]; // Create a copy to avoid issues during iteration
+    let exportCount = 0;
+    
+    photosToExport.forEach((photo, index) => {
+        // Stagger downloads to avoid overwhelming the browser
+        setTimeout(() => {
+            downloadPhoto(photo, null, false); // Never remove after download
+            exportCount++;
+            
+            // Show completion message when all photos are exported
+            if (exportCount === photosToExport.length) {
+                setTimeout(() => {
+                    alert(`Successfully exported ${exportCount} photo${exportCount !== 1 ? 's' : ''}! Images remain in the project for further editing.`);
+                }, 500);
+            }
+        }, index * 300); // 300ms delay between downloads
+    });
+}
+
+function clearProject() {
+    if (photos.length === 0) {
+        return;
+    }
+    
+    if (confirm(`Are you sure you want to clear all ${photos.length} photo${photos.length !== 1 ? 's' : ''}? This action cannot be undone.`)) {
+        photos = [];
+        photosGrid.innerHTML = '';
+        updateDisplay();
+    }
 } 

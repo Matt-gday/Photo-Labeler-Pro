@@ -50,7 +50,10 @@
                     <div class="selected-files" id="selectedFiles"></div>
                 </div>
 
-
+                <div class="batch-actions" id="batchActions" style="display: none;">
+                    <button class="batch-export-btn" id="exportAllBtn">Export All</button>
+                    <button class="batch-clear-btn" id="clearProjectBtn">Clear Project</button>
+                </div>
             </div>
 
             <div class="preview-section">
@@ -70,6 +73,20 @@
         </div>
     </div>
 
+    <!-- Label Validation Modal -->
+    <div class="modal-overlay" id="labelValidationModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Labels Required</h2>
+                <button class="modal-close" id="labelModalClose" aria-label="Close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p id="labelValidationMessage"></p>
+                <p style="margin-top: 16px; color: var(--text-secondary); font-size: 0.9rem;">Please add labels to all images before exporting.</p>
+            </div>
+        </div>
+    </div>
+
     <!-- Tips Modal -->
     <div class="modal-overlay" id="tipsModal">
         <div class="modal-content">
@@ -84,15 +101,17 @@
                 </div>
                 <div class="tip-section">
                     <h3>2. Add Text Labels</h3>
-                    <p>Type your desired text in the "Type text..." field below each image. The text will appear on your photo with a professional glow effect.</p>
+                    <p>Type your desired text in the "Type text..." field below each image. The text will appear on your photo with a professional glow effect. Use the text color toggle button to switch between light text (white with black glow) and dark text (black with white glow).</p>
                 </div>
                 <div class="tip-section">
-                    <h3>3. Save Individual Images</h3>
-                    <p>Click "Save" to download the labeled image. The image will automatically be removed from the app after saving.</p>
+                    <h3>3. Save Images</h3>
+                    <p><strong>Save:</strong> Download the labeled image. Images remain in the project for further editing or re-saving.<br>
+                    <strong>Remove:</strong> Delete the image from the project without saving.</p>
                 </div>
                 <div class="tip-section">
-                    <h3>4. Remove Unwanted Images</h3>
-                    <p>Click "Remove" to delete images you don't want to process without saving them.</p>
+                    <h3>4. Batch Operations</h3>
+                    <p><strong>Export All:</strong> Download all labeled images at once. Images remain in the project.<br>
+                    <strong>Clear Project:</strong> Remove all images from the project without saving.</p>
                 </div>
                 <div class="tip-section">
                     <h3>5. Switch Themes</h3>
