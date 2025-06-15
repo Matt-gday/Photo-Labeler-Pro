@@ -182,11 +182,18 @@ function hideLabelValidationModal() {
 }
 
 // iOS detection and modal functions
+let pendingIosDownload = null;
+
 function isIOS() {
     return /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
 }
 
-function showIosSaveModal() {
+function showIosSaveModal(photo = null, removeAfterDownload = false) {
+    // Store the pending download info
+    if (photo) {
+        pendingIosDownload = { photo, removeAfterDownload };
+    }
+    
     const iosSaveModal = document.getElementById('iosSaveModal');
     if (iosSaveModal) {
         iosSaveModal.style.display = 'flex';
@@ -199,5 +206,12 @@ function hideIosSaveModal() {
     if (iosSaveModal) {
         iosSaveModal.style.display = 'none';
         document.body.style.overflow = 'auto'; // Restore scrolling
+        
+        // Trigger the pending download if there is one
+        if (pendingIosDownload) {
+            const { photo, removeAfterDownload } = pendingIosDownload;
+            pendingIosDownload = null; // Clear the pending download
+            performDownload(photo, removeAfterDownload);
+        }
     }
 } 

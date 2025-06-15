@@ -213,13 +213,9 @@ function downloadPhoto(photo, labelModal = null, removeAfterDownload = false) {
         return;
     }
     
-    // Show iOS modal if on iOS device
+    // Show iOS modal if on iOS device and wait for user confirmation
     if (typeof isIOS === 'function' && isIOS()) {
-        showIosSaveModal();
-        // Continue with download after a short delay to allow modal to show
-        setTimeout(() => {
-            performDownload(photo, removeAfterDownload);
-        }, 100);
+        showIosSaveModal(photo, removeAfterDownload);
         return;
     }
     
