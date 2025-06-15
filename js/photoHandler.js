@@ -212,6 +212,10 @@ function downloadPhoto(photo, labelModal = null, removeAfterDownload = false) {
         }
         return;
     }
+
+    // Detect iOS devices
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || 
+                  (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
     
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
@@ -300,14 +304,79 @@ function downloadPhoto(photo, labelModal = null, removeAfterDownload = false) {
                 }
                 const finalBlob = new Blob([arrayBuffer], { type: 'image/jpeg' });
                 
-                const url = URL.createObjectURL(finalBlob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `${photo.title || photo.name.split('.')[0] || 'titled_photo'}.jpg`;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                URL.revokeObjectURL(url);
+                if (isIOS) {
+                    // For iOS, open image in new tab with instructions
+                    const url = URL.createObjectURL(finalBlob);
+                    const newWindow = window.open();
+                    if (newWindow) {
+                        newWindow.document.write(`
+                            <html>
+                                <head>
+                                    <title>Save Image - ${photo.title || 'Photo'}</title>
+                                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                                    <style>
+                                        body { 
+                                            margin: 0; 
+                                            padding: 20px; 
+                                            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+                                            background: #000;
+                                            color: #fff;
+                                            text-align: center;
+                                        }
+                                        img { 
+                                            max-width: 100%; 
+                                            height: auto; 
+                                            border-radius: 8px;
+                                            margin: 20px 0;
+                                        }
+                                        .instructions {
+                                            background: #1a1a1a;
+                                            padding: 15px;
+                                            border-radius: 8px;
+                                            margin: 20px 0;
+                                            font-size: 16px;
+                                            line-height: 1.4;
+                                        }
+                                        .step {
+                                            margin: 10px 0;
+                                            padding: 8px;
+                                            background: #2a2a2a;
+                                            border-radius: 6px;
+                                        }
+                                    </style>
+                                </head>
+                                <body>
+                                    <h2>Save to Photos</h2>
+                                    <img src="${url}" alt="${photo.title || 'Labeled Photo'}">
+                                    <div class="instructions">
+                                        <div class="step">1. Tap and hold the image above</div>
+                                        <div class="step">2. Select "Save to Photos" or "Add to Photos"</div>
+                                        <div class="step">3. The image will be saved to your Photos app</div>
+                                    </div>
+                                </body>
+                            </html>
+                        `);
+                        newWindow.document.close();
+                    } else {
+                        // Fallback if popup is blocked
+                        alert('Please allow popups for this site to save images on iOS, or use the share button in your browser.');
+                    }
+                    
+                    // Clean up URL after a delay
+                    setTimeout(() => {
+                        URL.revokeObjectURL(url);
+                    }, 30000); // 30 seconds
+                } else {
+                    // Standard download for non-iOS devices
+                    const url = URL.createObjectURL(finalBlob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `${photo.title || photo.name.split('.')[0] || 'titled_photo'}.jpg`;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                }
                 
                 // Only remove the photo if explicitly requested (for batch operations)
                 if (removeAfterDownload) {
