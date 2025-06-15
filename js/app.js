@@ -23,6 +23,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const labelModalClose = document.getElementById('labelModalClose');
     const labelValidationMessage = document.getElementById('labelValidationMessage');
     
+    // Get iOS save modal elements
+    const iosSaveModal = document.getElementById('iosSaveModal');
+    const iosGotItBtn = document.getElementById('iosGotItBtn');
+    
     // Initialize theme
     initializeTheme();
     
@@ -49,6 +53,18 @@ document.addEventListener('DOMContentLoaded', () => {
         labelValidationModal.addEventListener('click', (e) => {
             if (e.target === labelValidationModal) {
                 hideLabelValidationModal();
+            }
+        });
+    }
+    
+    // iOS save modal functionality
+    if (iosGotItBtn) {
+        iosGotItBtn.addEventListener('click', hideIosSaveModal);
+    }
+    if (iosSaveModal) {
+        iosSaveModal.addEventListener('click', (e) => {
+            if (e.target === iosSaveModal) {
+                hideIosSaveModal();
             }
         });
     }
@@ -161,6 +177,27 @@ function hideLabelValidationModal() {
     const labelValidationModal = document.getElementById('labelValidationModal');
     if (labelValidationModal) {
         labelValidationModal.style.display = 'none';
+        document.body.style.overflow = 'auto'; // Restore scrolling
+    }
+}
+
+// iOS detection and modal functions
+function isIOS() {
+    return /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+}
+
+function showIosSaveModal() {
+    const iosSaveModal = document.getElementById('iosSaveModal');
+    if (iosSaveModal) {
+        iosSaveModal.style.display = 'flex';
+        document.body.style.overflow = 'hidden'; // Prevent background scrolling
+    }
+}
+
+function hideIosSaveModal() {
+    const iosSaveModal = document.getElementById('iosSaveModal');
+    if (iosSaveModal) {
+        iosSaveModal.style.display = 'none';
         document.body.style.overflow = 'auto'; // Restore scrolling
     }
 } 
