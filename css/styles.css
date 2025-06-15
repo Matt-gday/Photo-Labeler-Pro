@@ -24,22 +24,22 @@
 }
 
 :root.light-theme {
-    /* Light theme */
-    --bg-primary: #ffffff;
-    --bg-secondary: #f8f9fa;
-    --bg-tertiary: #ffffff;
-    --border-primary: #e5e7eb;
-    --border-secondary: #d1d5db;
-    --text-primary: #111827;
-    --text-secondary: #6b7280;
-    --text-tertiary: #9ca3af;
+    /* Light theme - softer, less bright */
+    --bg-primary: #f5f5f5;
+    --bg-secondary: #ebebeb;
+    --bg-tertiary: #f0f0f0;
+    --border-primary: #d0d0d0;
+    --border-secondary: #c0c0c0;
+    --text-primary: #2a2a2a;
+    --text-secondary: #5a5a5a;
+    --text-tertiary: #8a8a8a;
     --accent-primary: #0066cc;
     --accent-primary-hover: #0052a3;
     --accent-success: #16a34a;
     --accent-success-hover: #15803d;
     --accent-danger: #dc2626;
     --accent-danger-hover: #b91c1c;
-    --canvas-bg: #f9fafb;
+    --canvas-bg: #f2f2f2;
 }
 
 body {
